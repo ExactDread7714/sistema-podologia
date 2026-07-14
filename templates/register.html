@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Registro de Pacientes - Podología Web{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center my-4" style="min-height: 70vh;">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <div class="bg-primary text-white d-inline-flex p-3 rounded-circle shadow mb-3">
+                        <i class="fa-solid fa-user-plus fs-1"></i>
+                    </div>
+                    <h2 class="fw-bold text-dark">Registro de Paciente</h2>
+                    <p class="text-muted">Crea tu cuenta para gestionar tus citas y resúmenes</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('register') }}">
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label fw-semibold text-secondary">Nombre Completo</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted border-end-0"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" class="form-control bg-light border-start-0 ps-0" id="full_name" name="full_name" placeholder="Ej. Juan Pérez García" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-semibold text-secondary">Correo Electrónico</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted border-end-0"><i class="fa-solid fa-envelope"></i></span>
+                            <input type="email" class="form-control bg-light border-start-0 ps-0" id="email" name="email" placeholder="nombre@correo.com" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="phone" class="form-label fw-semibold text-secondary">Teléfono de Contacto</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted border-end-0"><i class="fa-solid fa-phone"></i></span>
+                            <input type="tel" class="form-control bg-light border-start-0 ps-0" id="phone" name="phone" placeholder="Ej. 600123456" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold text-secondary">Contraseña</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted border-end-0"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" class="form-control bg-light border-start-0 ps-0" id="password" name="password" placeholder="Mínimo 6 caracteres" minlength="6" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm py-2">
+                            Crear Cuenta <i class="fa-solid fa-check ms-1"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-4 border-top pt-3">
+                    <p class="mb-1 text-muted">¿Ya tienes una cuenta?</p>
+                    <a href="{{ url_for('login') }}" class="fw-bold text-decoration-none">Inicia sesión aquí</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

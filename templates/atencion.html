@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+
+{% block title %}Consulta Activa - Podología Web{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('calendar_podologist') }}" class="text-decoration-none">Calendario</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Consulta Activa</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Ficha del Paciente y Tarifas Destacadas -->
+    <div class="col-md-4">
+        <div class="card shadow-sm border-0 rounded-4 mb-4">
+            <div class="card-body p-4 text-center">
+                <div class="bg-primary-subtle text-primary d-inline-flex p-3 rounded-circle shadow-sm mb-3" style="width: 70px; height: 70px; align-items: center; justify-content: center;">
+                    <i class="fa-solid fa-stethoscope fs-2"></i>
+                </div>
+                <h4 class="fw-bold text-dark mb-1">{{ patient.full_name }}</h4>
+                <p class="text-muted small"><i class="fa-regular fa-envelope me-1"></i> {{ patient.email }}</p>
+
+                <!-- DESTACADO PROMINENTE DE PRECIO PERSONALIZADO -->
+                <div class="bg-warning-subtle text-dark p-3 rounded-3 my-4 border border-warning" style="box-shadow: 0 4px 10px rgba(255, 193, 7, 0.15);">
+                    <small class="d-block text-uppercase fw-bold text-warning-emphasis mb-1">
+                        <i class="fa-solid fa-triangle-exclamation me-1"></i> RECORDATORIO DE COBRO
+                    </small>
+                    <span class="fs-1 fw-bold text-dark d-block">
+                        {{ "%.2f" | format(patient.custom_price) }} €
+                    </span>
+                    <small class="text-muted d-block mt-1">Este es el precio interno personalizado asignado a este cliente.</small>
+                </div>
+
+                <div class="text-start">
+                    <p class="mb-2"><strong><i class="fa-solid fa-phone text-muted me-2"></i> Teléfono:</strong> {{ patient.phone if patient.phone else 'No disponible' }}</p>
+                    <p class="mb-2"><strong><i class="fa-solid fa-calendar-check text-muted me-2"></i> Motivo Cita:</strong> {{ appointment.reason }}</p>
+                    <p class="mb-0"><strong><i class="fa-regular fa-clock text-muted me-2"></i> Hora programada:</strong> {{ appointment.time.strftime('%H:%M') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-circle-question text-primary me-2"></i>¿Cómo funciona?</h5>
+                <ul class="text-muted small ps-3">
+                    <li class="mb-2"><strong>Dictado por Voz:</strong> Presiona el icono <i class="fa-solid fa-microphone text-danger"></i> al lado del diagnóstico para habilitar la transcripción de tu voz en tiempo real.</li>
+                    <li class="mb-2"><strong>Fotos desde Cámara:</strong> En tu celular o tableta, presiona "Tomar Foto" para que se active directamente la cámara trasera del dispositivo para subir registros gráficos instantáneamente.</li>
+                    <li class="mb-2"><strong>Plantillas rápidas:</strong> Haz clic en cualquiera de las etiquetas rápidas de abajo para agregar términos podológicos comunes instantáneamente al diagnóstico.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario Clínico con Web Speech API y Cámara Directa -->
+    <div class="col-md-8">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <h3 class="fw-bold text-dark mb-4"><i class="fa-solid fa-clipboard-user text-primary me-2"></i>Atención Clínica</h3>
+
+                <form method="POST" action="{{ url_for('save_atencion', appointment_id=appointment.id) }}" enctype="multipart/form-data">
+
+                    <!-- Campo Diagnóstico y Tratamiento con Micro y Botones Rápidos -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label for="diagnosis_treatment" class="form-label fw-bold text-secondary mb-0">
+                                Diagnóstico y Tratamiento (Podólogo)
+                            </label>
+
+                            <!-- Botón de Dictado por Voz con Micrófono -->
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 shadow-sm d-flex align-items-center" id="dictadoVozBtn">
+                                <i class="fa-solid fa-microphone me-1" id="micIcon"></i> <span id="micText">Iniciar Dictado</span>
+                            </button>
+                        </div>
+
+                        <!-- BOTONES DE PLANTILLA RÁPIDA -->
+                        <div class="mb-2 d-flex flex-wrap gap-1 bg-white p-2 rounded border">
+                            <span class="text-muted small d-block w-100 mb-1 fw-bold">Plantillas Rápidas:</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary quick-template" data-text="Onicocriptosis (Uña encarnada) observada. Se realiza resección de espícula y curación de canal.">
+                                <i class="fa-solid fa-plus me-1"></i> Onicocriptosis
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary quick-template" data-text="Heloma plantar detectado en zona de hiperpresión metatarsal. Se realiza enucleación con bisturí y fresado.">
+                                <i class="fa-solid fa-plus me-1"></i> Heloma Plantar
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary quick-template" data-text="Hiperqueratosis plantar difusa (durezas). Desbridamiento y fresado completo de talones y cabezas metatarsales.">
+                                <i class="fa-solid fa-plus me-1"></i> Hiperqueratosis
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary quick-template" data-text="Verruga plantar (papiloma) observada. Se realiza curetaje y aplicación de tratamiento químico local.">
+                                <i class="fa-solid fa-plus me-1"></i> Verruga Plantar
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary quick-template" data-text="Dermatomicosis interdigital (pie de atleta) observada. Se recomienda lavado diario, secado minucioso y tratamiento antifúngico tópico.">
+                                <i class="fa-solid fa-plus me-1"></i> Dermatomicosis
+                            </button>
+                        </div>
+
+                        <textarea class="form-control" id="diagnosis_treatment" name="diagnosis_treatment" rows="6" placeholder="Escribe aquí el diagnóstico detallado, observaciones y tratamiento realizado..." required></textarea>
+                        <div class="form-text text-danger d-none" id="voiceSupportMessage">
+                            <i class="fa-solid fa-circle-exclamation me-1"></i> El reconocimiento de voz no está soportado en este navegador. Utiliza Google Chrome o un navegador compatible para usar el dictado.
+                        </div>
+                    </div>
+
+                    <!-- Campo Instrucciones del Paciente (Visibles para el paciente) -->
+                    <div class="mb-4">
+                        <label for="patient_instructions" class="form-label fw-bold text-success">
+                            Instrucciones para el Paciente (Visibles en su Portal)
+                        </label>
+                        <textarea class="form-control bg-success-subtle border-success-subtle text-success-emphasis" id="patient_instructions" name="patient_instructions" rows="4" placeholder="Ej. Lavarse los pies a diario, secar bien entre los dedos, aplicar crema de urea al 20%, reposar 24 horas." required></textarea>
+                        <div class="form-text mt-1">
+                            Este cuadro contendrá estrictamente las pautas de autocuidado que el paciente podrá ver desde su portal de forma remota. <strong>No incluyas precios aquí.</strong>
+                        </div>
+                    </div>
+
+                    <!-- CAMERA UPLOAD (Subida de Fotos con Cámara integrada para móviles/tabletas) -->
+                    <div class="mb-4 bg-light p-3 rounded-3 border">
+                        <label for="photos" class="form-label fw-bold text-secondary">
+                            <i class="fa-solid fa-camera-retro me-1"></i> Capturar / Subir Foto Clínica
+                        </label>
+                        <!-- accept="image/*" capture="environment" indica cámara trasera -->
+                        <input type="file" class="form-control" id="photos" name="photos" accept="image/*" capture="environment" multiple>
+                        <div class="form-text">
+                            En teléfonos o tablets se abrirá la cámara directamente al presionar. Puedes subir fotos del estado del pie para el registro histórico del paciente.
+                        </div>
+
+                        <!-- Contenedor para previsualizar foto antes de subir -->
+                        <div class="row row-cols-3 g-2 mt-2" id="previewContainer"></div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                        <a href="{{ url_for('calendar_podologist') }}" class="btn btn-outline-secondary fw-semibold">
+                            <i class="fa-solid fa-arrow-left me-1"></i> Volver al Calendario
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg fw-bold px-4 shadow-sm">
+                            <i class="fa-regular fa-floppy-disk me-1"></i> Finalizar y Guardar Consulta
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. DICTADO POR VOZ (Web Speech API)
+    var dictadoBtn = document.getElementById('dictadoVozBtn');
+    var micIcon = document.getElementById('micIcon');
+    var micText = document.getElementById('micText');
+    var textDiag = document.getElementById('diagnosis_treatment');
+    var voiceSupportMessage = document.getElementById('voiceSupportMessage');
+
+    var recognition;
+    var isListening = false;
+
+    // Verificar soporte de SpeechRecognition
+    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'es-ES';
+        recognition.continuous = true;
+        recognition.interimResults = false;
+
+        recognition.onstart = function() {
+            isListening = true;
+            micText.innerText = "Escuchando... Haz clic para detener";
+            dictadoBtn.classList.remove('btn-outline-danger');
+            dictadoBtn.classList.add('btn-danger');
+            micIcon.className = "fa-solid fa-microphone-lines fa-bounce me-1";
+        };
+
+        recognition.onend = function() {
+            isListening = false;
+            micText.innerText = "Iniciar Dictado";
+            dictadoBtn.classList.remove('btn-danger');
+            dictadoBtn.classList.add('btn-outline-danger');
+            micIcon.className = "fa-solid fa-microphone me-1";
+        };
+
+        recognition.onresult = function(event) {
+            var currentResultIndex = event.resultIndex;
+            var transcript = event.results[currentResultIndex][0].transcript;
+
+            // Concatenar el dictado al texto existente, agregando espacio si es necesario
+            if (textDiag.value.trim().length > 0) {
+                textDiag.value += " " + transcript;
+            } else {
+                textDiag.value = transcript;
+            }
+        };
+
+        recognition.onerror = function(event) {
+            console.error("Error en reconocimiento de voz: ", event.error);
+            recognition.stop();
+        };
+
+        dictadoBtn.addEventListener('click', function() {
+            if (isListening) {
+                recognition.stop();
+            } else {
+                recognition.start();
+            }
+        });
+    } else {
+        // Ocultar botón o mostrar mensaje de incompatibilidad
+        dictadoBtn.style.display = 'none';
+        voiceSupportMessage.classList.remove('d-none');
+    }
+
+    // 2. BOTONES DE PLANTILLA RÁPIDA
+    var templateBtns = document.querySelectorAll('.quick-template');
+    templateBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var textToAppend = btn.getAttribute('data-text');
+            if (textDiag.value.trim().length > 0) {
+                textDiag.value += "\n" + textToAppend;
+            } else {
+                textDiag.value = textToAppend;
+            }
+            // Enfoque inmediato al cuadro de texto
+            textDiag.focus();
+        });
+    });
+
+    // 3. PREVISUALIZACIÓN DE FOTO SELECCIONADA
+    var fileInput = document.getElementById('photos');
+    var previewContainer = document.getElementById('previewContainer');
+
+    fileInput.addEventListener('change', function() {
+        previewContainer.innerHTML = '';
+        var files = fileInput.files;
+
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            if (file.type.startsWith('image/')) {
+                var reader = new FileReader();
+                reader.onload = (function(theFile) {
+                    return function(e) {
+                        var colDiv = document.createElement('div');
+                        colDiv.className = 'col';
+                        colDiv.innerHTML = `
+                            <div class="card h-100 border overflow-hidden rounded-3 shadow-sm">
+                                <img src="${e.target.result}" class="card-img-top" style="height: 100px; object-fit: cover;">
+                                <div class="p-1 bg-secondary text-white text-center" style="font-size: 0.65rem;">
+                                    Nueva Foto
+                                </div>
+                            </div>
+                        `;
+                        previewContainer.appendChild(colDiv);
+                    };
+                })(file);
+                reader.readAsDataURL(file);
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

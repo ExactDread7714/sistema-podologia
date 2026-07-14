@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión - Podología Web{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center my-4" style="min-height: 70vh;">
+    <div class="col-md-5">
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <div class="bg-primary text-white d-inline-flex p-3 rounded-circle shadow mb-3">
+                        <i class="fa-solid fa-unlock-keyhole fs-1"></i>
+                    </div>
+                    <h2 class="fw-bold text-dark">Iniciar Sesión</h2>
+                    <p class="text-muted">Accede a tu cuenta de Podología Web</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="mb-3">
+                        <label for="email" class="form-label fw-semibold text-secondary">Correo Electrónico</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted border-end-0"><i class="fa-solid fa-envelope"></i></span>
+                            <input type="email" class="form-control bg-light border-start-0 ps-0" id="email" name="email" placeholder="nombre@correo.com" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold text-secondary">Contraseña</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted border-end-0"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" class="form-control bg-light border-start-0 ps-0" id="password" name="password" placeholder="Tu contraseña" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold shadow-sm py-2">
+                            Entrar <i class="fa-solid fa-arrow-right-to-bracket ms-1"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-4 border-top pt-3">
+                    <p class="mb-1 text-muted">¿No tienes cuenta de paciente?</p>
+                    <a href="{{ url_for('register') }}" class="fw-bold text-decoration-none">Regístrate como paciente aquí</a>
+                </div>
+
+                <div class="mt-4 p-3 bg-light rounded-3 text-center border">
+                    <small class="text-muted d-block fw-bold mb-1">Cuentas de prueba:</small>
+                    <div class="d-flex justify-content-around text-start">
+                        <div>
+                            <small class="d-block"><strong>Podólogo:</strong></small>
+                            <small class="text-secondary">podologo@web.com / admin</small>
+                        </div>
+                        <div>
+                            <small class="d-block"><strong>Paciente:</strong></small>
+                            <small class="text-secondary">paciente@web.com / user</small>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

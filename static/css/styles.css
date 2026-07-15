@@ -1,0 +1,104 @@
+/* Estilos generales modernos para Podología Web */
+
+:root {
+    --primary-color: #0d6efd;
+    --primary-hover: #0b5ed7;
+    --success-color: #198754;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --dark-color: #212529;
+    --light-color: #f8f9fa;
+    --border-radius-custom: 12px;
+}
+
+body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    color: var(--dark-color);
+}
+
+/* Tipografía y Espaciado */
+.tracking-tight {
+    letter-spacing: -0.025em;
+}
+
+/* Efectos en tarjetas */
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+@media (min-width: 768px) {
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08) !important;
+    }
+}
+
+/* Estilos de elementos interactivos de la Navbar */
+.navbar-brand {
+    font-size: 1.35rem;
+}
+
+.dropdown-menu-item {
+    transition: background-color 0.2s;
+}
+
+.dropdown-menu-item:hover {
+    background-color: var(--light-color);
+}
+
+/* Ajustes Responsivos para Formularios y Botones en Móviles */
+@media (max-width: 576px) {
+    .btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.95rem;
+    }
+
+    .form-control, .form-select {
+        padding: 0.6rem 0.85rem;
+        font-size: 0.95rem;
+    }
+}
+
+/* Clases útiles para timeline en historial clínico */
+.timeline {
+    position: relative;
+    padding-left: 10px;
+}
+
+/* Clases de utilidad específicas para imágenes clínicas */
+.clinical-thumb-img {
+    transition: transform 0.2s;
+}
+
+.clinical-thumb-img:hover {
+    transform: scale(1.03);
+}
+
+/* Estilo para los botones de las plantillas rápidas de atención */
+.quick-template {
+    font-size: 0.8rem;
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+}
+
+/* Personalización sutil para FullCalendar en móvil */
+.fc-theme-standard td, .fc-theme-standard th {
+    border-color: #e9ecef !important;
+}
+
+.fc-daygrid-event {
+    border-radius: 4px !important;
+    padding: 2px 4px !important;
+    font-size: 0.85rem !important;
+}
+
+.fc-toolbar-title {
+    font-size: 1.25rem !important;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .fc-toolbar-title {
+        font-size: 1rem !important;
+    }
+}

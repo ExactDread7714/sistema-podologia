@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Portal Paciente - Podología Web{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h1 class="fw-bold text-dark mb-1"><i class="fa-solid fa-circle-user text-primary me-2"></i>Mi Portal de Paciente</h1>
+        <p class="text-muted">Consulta el estado de tus citas médicas y accede a las pautas y resúmenes clínicos de autocuidado dados por tu podólogo.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+        <a href="{{ url_for('reservar') }}" class="btn btn-primary shadow-sm fw-semibold">
+            <i class="fa-regular fa-calendar-plus me-1"></i> Solicitar Nueva Cita
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Panel Izquierdo: Citas del Paciente (Futuras o Solicitadas) -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <h4 class="fw-bold text-dark mb-4"><i class="fa-regular fa-calendar-check text-primary me-2"></i>Mis Citas Solicitadas</h4>
+
+                {% if appointments %}
+                    <div class="list-group list-group-flush">
+                        {% for appt in appointments %}
+                            <div class="list-group-item px-0 py-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-1">
+                                            <i class="fa-regular fa-clock me-1 text-primary"></i>
+                                            {{ appt.date.strftime('%d/%m/%Y') }} a las {{ appt.time.strftime('%H:%M') }}
+                                        </h6>
+                                        <p class="text-muted small mb-1"><strong>Motivo:</strong> {{ appt.reason }}</p>
+
+                                        <!-- NUEVA INFORMACION DE MODALIDAD DOMICILIO / CONSULTORIO -->
+                                        <p class="mb-0 small text-secondary">
+                                            <strong>Modalidad:</strong>
+                                            {% if appt.is_home_visit %}
+                                                <span class="badge bg-info-subtle text-info border border-info-subtle"><i class="fa-solid fa-house-chimney me-1"></i> A domicilio</span>
+                                                <span class="d-block mt-1 text-dark"><i class="fa-solid fa-location-dot text-danger me-1"></i> {{ appt.home_address }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle"><i class="fa-solid fa-stethoscope me-1"></i> En consultorio</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        {% if appt.status == 'approved' %}
+                                            <span class="badge bg-success rounded-pill px-3 py-1"><i class="fa-solid fa-circle-check me-1"></i> Confirmada</span>
+                                        {% elif appt.status == 'rejected' %}
+                                            <span class="badge bg-danger rounded-pill px-3 py-1"><i class="fa-solid fa-circle-xmark me-1"></i> Cancelada</span>
+                                        {% else %}
+                                            <span class="badge bg-warning text-dark rounded-pill px-3 py-1"><i class="fa-solid fa-hourglass-half me-1"></i> Pendiente</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fa-regular fa-calendar-times fs-1 text-muted mb-3"></i>
+                        <h5 class="fw-semibold text-secondary">No tienes citas agendadas</h5>
+                        <p class="text-muted small mb-0">Solicita una cita usando el botón superior derecho.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Panel Derecho: Historial de Pautas Clínicas (ÚNICAMENTE las instrucciones) -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-body p-4">
+                <h4 class="fw-bold text-dark mb-4"><i class="fa-solid fa-notes-medical text-success me-2"></i>Pautas de Autocuidado Médicas</h4>
+
+                <div class="alert alert-success-subtle text-success border border-success-subtle p-3 rounded-3 small mb-4">
+                    <i class="fa-solid fa-shield-halved me-1"></i> Aquí se muestran únicamente las recomendaciones y directivas de cuidados domiciliarios recomendadas por tu especialista tras tu atención médica.
+                </div>
+
+                {% if records %}
+                    <div class="accordion accordion-flush" id="clinicalInstructionsAccordion">
+                        {% for record in records %}
+                            <div class="accordion-item border-bottom py-2">
+                                <h2 class="accordion-header" id="headingRecord{{ record.id }}">
+                                    <button class="accordion-button collapsed fw-bold text-dark ps-0" type="button" data-bs-toggle="collapse" data-bs-target="#collapseRecord{{ record.id }}" aria-expanded="false" aria-controls="collapseRecord{{ record.id }}">
+                                        <i class="fa-regular fa-calendar-check me-2 text-success"></i> Visita del {{ record.date.strftime('%d / %m / %Y') }}
+                                    </button>
+                                </h2>
+                                <div id="collapseRecord{{ record.id }}" class="accordion-collapse collapse" aria-labelledby="headingRecord{{ record.id }}" data-bs-parent="#clinicalInstructionsAccordion">
+                                    <div class="accordion-body px-0 py-3">
+                                        <div class="bg-light p-3 rounded-3 border">
+                                            <h6 class="fw-bold text-success mb-2"><i class="fa-solid fa-prescription-bottle-medical me-1"></i> Instrucciones de tu Podólogo:</h6>
+                                            <!-- MOSTRAMOS ESTRICTAMENTE SÓLO EL CAMPO patient_instructions -->
+                                            <p class="text-dark mb-0 small" style="white-space: pre-wrap; line-height: 1.5;">{{ record.patient_instructions }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fa-solid fa-notes-medical fs-1 text-muted mb-3"></i>
+                        <h5 class="fw-semibold text-secondary">Aún no cuentas con resúmenes de pautas médicas</h5>
+                        <p class="text-muted small mb-0">Cuando seas atendido por el podólogo, verás tus pautas domésticas aquí.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,501 @@
+{% extends 'base.html' %}
+
+{% block title %}Calendario de Citas - Podología Web{% endblock %}
+
+{% block extra_css %}
+<!-- FullCalendar CSS desde CDN -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+<style>
+    /* Estilos responsivos del calendario para mejorar en móviles */
+    #calendar {
+        background: #ffffff;
+        padding: 15px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        min-height: 500px;
+    }
+    @media (max-width: 768px) {
+        .fc .fc-toolbar {
+            flex-direction: column;
+            gap: 10px;
+        }
+        .fc-header-toolbar {
+            margin-bottom: 1em !important;
+        }
+        #calendar {
+            padding: 8px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-8">
+        <h1 class="fw-bold text-dark mb-1"><i class="fa-regular fa-calendar-days text-primary me-2"></i>Mi Calendario de Citas</h1>
+        <p class="text-muted">Gestiona tus citas de forma interactiva. Haz clic en un hueco vacío para agendar o arrastra citas para reprogramarlas.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-2 mt-md-0">
+        <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#createAppointmentModal">
+            <i class="fa-solid fa-plus me-1"></i> Nueva Cita Manual
+        </button>
+    </div>
+</div>
+
+<!-- Calendario -->
+<div class="row">
+    <div class="col-12">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<!-- MODAL: AGENDAR CITA NUEVA -->
+<div class="modal fade" id="createAppointmentModal" tabindex="-1" aria-labelledby="createAppointmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="createAppointmentModalLabel"><i class="fa-regular fa-calendar-plus me-2"></i>Agendar Cita Médica</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form id="createAppointmentForm">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="new_patient_id" class="form-label fw-semibold text-secondary">Seleccionar Paciente</label>
+                        <select class="form-select bg-light" id="new_patient_id" required>
+                            <option value="" disabled selected>-- Selecciona un paciente registrado --</option>
+                            {% for patient in patients %}
+                                <option value="{{ patient.id }}">{{ patient.full_name }} ({{ patient.email }})</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text mt-1 text-muted">
+                            Si el paciente no está en la lista, regístralo primero en la pestaña <a href="{{ url_for('patients_list') }}" class="text-decoration-none">Pacientes</a>.
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="new_date" class="form-label fw-semibold text-secondary">Fecha</label>
+                            <input type="date" class="form-control bg-light" id="new_date" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="new_time" class="form-label fw-semibold text-secondary">Hora de Inicio</label>
+                            <input type="time" class="form-control bg-light" id="new_time" required>
+                        </div>
+                    </div>
+
+                    <!-- NUEVOS CAMPOS: DOMICILIO Y DURACIÓN ASIGNADA POR EL PODÓLOGO -->
+                    <div class="row bg-light p-3 rounded-3 mb-3 border g-2">
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="new_is_home_visit">
+                                <label class="form-check-label fw-bold text-dark" for="new_is_home_visit">🏠 ¿Es una cita a domicilio?</label>
+                            </div>
+                        </div>
+                        <div class="col-12 d-none" id="new_home_address_container">
+                            <label for="new_home_address" class="form-label fw-semibold text-secondary">Dirección del Domicilio</label>
+                            <input type="text" class="form-control bg-white" id="new_home_address" placeholder="Ej. Calle Mayor 12, Piso 2A">
+                        </div>
+                        <div class="col-12 mt-2">
+                            <label for="new_duration_minutes" class="form-label fw-semibold text-secondary">Duración Estimada (Minutos para reservar el espacio)</label>
+                            <select class="form-select bg-white" id="new_duration_minutes">
+                                <option value="15">15 minutos</option>
+                                <option value="30" selected>30 minutos (Estándar)</option>
+                                <option value="45">45 minutos</option>
+                                <option value="60">1 hora (60 min)</option>
+                                <option value="90">1 hora y media (90 min)</option>
+                                <option value="120">2 horas (120 min)</option>
+                            </select>
+                            <div class="form-text small">La duración bloqueará este tiempo de forma exacta en tu calendario.</div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="new_reason" class="form-label fw-semibold text-secondary">Motivo de la Cita</label>
+                        <textarea class="form-control bg-light" id="new_reason" rows="2" placeholder="Ej. Dolor en talón, Onicocriptosis, etc." required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="new_status" class="form-label fw-semibold text-secondary">Estado Inicial</label>
+                        <select class="form-select bg-light" id="new_status">
+                            <option value="approved" selected>Aprobada (Confirmada)</option>
+                            <option value="pending">Pendiente</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top p-3 bg-light rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary fw-semibold px-4">Guardar Cita</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: DETALLES Y EDICIÓN DE CITA EXISTENTE -->
+<div class="modal fade" id="appointmentDetailModal" tabindex="-1" aria-labelledby="appointmentDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header bg-dark text-white" id="detailModalHeader">
+                <h5 class="modal-title fw-bold" id="appointmentDetailModalLabel"><i class="fa-solid fa-circle-info me-2"></i>Detalles de la Cita</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="p-3 bg-light rounded-3 mb-3 border">
+                    <h5 class="fw-bold text-primary mb-1" id="detailPatientName">Juan Pérez</h5>
+                    <p class="text-muted mb-2"><i class="fa-solid fa-user-tag me-1"></i> Paciente de Podología Web</p>
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-secondary d-block">PRECIO PERSONALIZADO REGISTRADO</small>
+                            <span class="fs-5 fw-bold text-success" id="detailCustomPrice">0.00 €</span>
+                        </div>
+                        <a href="#" id="detailProfileBtn" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-address-card me-1"></i> Ver Perfil Completo</a>
+                    </div>
+                </div>
+
+                <form id="editAppointmentForm">
+                    <input type="hidden" id="edit_appt_id">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_date" class="form-label fw-semibold text-secondary">Fecha</label>
+                            <input type="date" class="form-control" id="edit_date" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_time" class="form-label fw-semibold text-secondary">Hora</label>
+                            <input type="time" class="form-control" id="edit_time" required>
+                        </div>
+                    </div>
+
+                    <!-- EDICION DE CAMPOS DE DOMICILIO Y DURACION -->
+                    <div class="row bg-light p-3 rounded-3 mb-3 border g-2">
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="edit_is_home_visit">
+                                <label class="form-check-label fw-bold text-dark" for="edit_is_home_visit">🏠 Cita a domicilio</label>
+                            </div>
+                        </div>
+                        <div class="col-12 d-none" id="edit_home_address_container">
+                            <label for="edit_home_address" class="form-label fw-semibold text-secondary">Dirección Registrada</label>
+                            <input type="text" class="form-control bg-white" id="edit_home_address" placeholder="Dirección del domicilio del paciente">
+                        </div>
+                        <div class="col-12 mt-2">
+                            <label for="edit_duration_minutes" class="form-label fw-semibold text-secondary">Duración de la Cita (Minutos asignados por ti)</label>
+                            <select class="form-select bg-white" id="edit_duration_minutes">
+                                <option value="15">15 minutos</option>
+                                <option value="30">30 minutos</option>
+                                <option value="45">45 minutos</option>
+                                <option value="60">1 hora (60 min)</option>
+                                <option value="90">1 hora y media (90 min)</option>
+                                <option value="120">2 horas (120 min)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_reason" class="form-label fw-semibold text-secondary">Motivo de la Cita</label>
+                        <textarea class="form-control" id="edit_reason" rows="2" required></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_status" class="form-label fw-semibold text-secondary">Estado</label>
+                        <select class="form-select" id="edit_status">
+                            <option value="pending">Pendiente</option>
+                            <option value="approved">Aprobada</option>
+                            <option value="rejected">Rechazada</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="#" id="startConsultationBtn" class="btn btn-success btn-lg fw-bold shadow-sm">
+                            <i class="fa-solid fa-stethoscope me-1"></i> INICIAR CONSULTA ACTIVA
+                        </a>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-top p-3 bg-light rounded-bottom-4 d-flex justify-content-between">
+                <button type="button" id="deleteApptBtn" class="btn btn-danger"><i class="fa-regular fa-trash-can me-1"></i> Eliminar</button>
+                <div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" id="saveEditApptBtn" class="btn btn-primary fw-semibold px-4">Actualizar Cita</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- FullCalendar JS desde CDN -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/locales/es.global.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+
+    // Instancia de los modales de Bootstrap
+    var createModal = new bootstrap.Modal(document.getElementById('createAppointmentModal'));
+    var detailModal = new bootstrap.Modal(document.getElementById('appointmentDetailModal'));
+
+    // Lógica para mostrar condicionalmente la dirección en creación nueva
+    var newIsHomeVisit = document.getElementById('new_is_home_visit');
+    var newHomeAddressContainer = document.getElementById('new_home_address_container');
+    newIsHomeVisit.addEventListener('change', function() {
+        if (newIsHomeVisit.checked) {
+            newHomeAddressContainer.classList.remove('d-none');
+            document.getElementById('new_home_address').required = true;
+        } else {
+            newHomeAddressContainer.classList.add('d-none');
+            document.getElementById('new_home_address').required = false;
+        }
+    });
+
+    // Lógica para mostrar condicionalmente la dirección en edición
+    var editIsHomeVisit = document.getElementById('edit_is_home_visit');
+    var editHomeAddressContainer = document.getElementById('edit_home_address_container');
+    editIsHomeVisit.addEventListener('change', function() {
+        if (editIsHomeVisit.checked) {
+            editHomeAddressContainer.classList.remove('d-none');
+            document.getElementById('edit_home_address').required = true;
+        } else {
+            editHomeAddressContainer.classList.add('d-none');
+            document.getElementById('edit_home_address').required = false;
+        }
+    });
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: 'es',
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        buttonText: {
+            today: 'Hoy',
+            month: 'Mes',
+            week: 'Semana',
+            day: 'Día'
+        },
+        editable: true, // Habilita drag-and-drop
+        selectable: true, // Habilita selección de celdas
+        events: '/api/appointments', // Carga eventos mediante la API
+
+        // Al hacer clic en un rango de fechas vacío o celda
+        select: function(info) {
+            document.getElementById('new_date').value = info.startStr.split('T')[0];
+
+            if (info.startStr.includes('T')) {
+                var timePart = info.startStr.split('T')[1].substring(0, 5);
+                document.getElementById('new_time').value = timePart;
+            } else {
+                document.getElementById('new_time').value = "09:00";
+            }
+            createModal.show();
+        },
+
+        // Al hacer clic en un evento (cita) existente
+        eventClick: function(info) {
+            var props = info.event.extendedProps;
+            var apptId = info.event.id;
+
+            // Rellenar el modal de detalles
+            document.getElementById('edit_appt_id').value = apptId;
+            document.getElementById('detailPatientName').innerText = props.patient_name;
+            document.getElementById('detailCustomPrice').innerText = parseFloat(props.custom_price).toFixed(2) + ' €';
+
+            document.getElementById('detailProfileBtn').href = '/patients/' + props.patient_id;
+            document.getElementById('startConsultationBtn').href = '/atencion/' + apptId;
+
+            document.getElementById('edit_date').value = props.date;
+            document.getElementById('edit_time').value = props.time;
+            document.getElementById('edit_reason').value = props.reason;
+            document.getElementById('edit_status').value = props.status;
+
+            // Cargar datos nuevos de Domicilio y Duración
+            document.getElementById('edit_is_home_visit').checked = props.is_home_visit;
+            document.getElementById('edit_home_address').value = props.home_address;
+            document.getElementById('edit_duration_minutes').value = props.duration_minutes;
+
+            if (props.is_home_visit) {
+                document.getElementById('edit_home_address_container').classList.remove('d-none');
+                document.getElementById('edit_home_address').required = true;
+            } else {
+                document.getElementById('edit_home_address_container').classList.add('d-none');
+                document.getElementById('edit_home_address').required = false;
+            }
+
+            // Cambiar el color de la cabecera según el estado
+            var header = document.getElementById('detailModalHeader');
+            header.className = "modal-header text-white ";
+            if (props.status === 'approved') {
+                header.classList.add('bg-success');
+            } else if (props.status === 'rejected') {
+                header.classList.add('bg-danger');
+            } else {
+                header.classList.add('bg-warning');
+            }
+
+            detailModal.show();
+        },
+
+        // Al arrastrar y soltar un evento en otra celda
+        eventDrop: function(info) {
+            updateAppointmentDateAndTime(info.event);
+        },
+
+        // Al cambiar de tamaño un evento en vistas de hora
+        eventResize: function(info) {
+            updateAppointmentDateAndTime(info.event);
+        }
+    });
+
+    calendar.render();
+
+    // Función para actualizar fecha y hora vía API tras drag/drop
+    function updateAppointmentDateAndTime(event) {
+        var apptId = event.id;
+        var newDate = event.start.toISOString().split('T')[0];
+
+        var hours = String(event.start.getHours()).padStart(2, '0');
+        var minutes = String(event.start.getMinutes()).padStart(2, '0');
+        var newTime = hours + ':' + minutes;
+
+        fetch('/api/appointments/' + apptId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                date: newDate,
+                time: newTime
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log(data.message);
+                calendar.refetchEvents();
+            } else {
+                alert('Error al reprogramar: ' + data.message);
+                calendar.refetchEvents();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            calendar.refetchEvents();
+        });
+    }
+
+    // Guardar Cita Nueva (Submit de Formulario)
+    document.getElementById('createAppointmentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        var patientId = document.getElementById('new_patient_id').value;
+        var date = document.getElementById('new_date').value;
+        var time = document.getElementById('new_time').value;
+        var reason = document.getElementById('new_reason').value;
+        var status = document.getElementById('new_status').value;
+
+        // Nuevos campos de Domicilio y Duración
+        var isHomeVisit = document.getElementById('new_is_home_visit').checked;
+        var homeAddress = document.getElementById('new_home_address').value;
+        var durationMinutes = document.getElementById('new_duration_minutes').value;
+
+        fetch('/api/appointments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                patient_id: patientId,
+                date: date,
+                time: time,
+                reason: reason,
+                status: status,
+                is_home_visit: isHomeVisit,
+                home_address: isHomeVisit ? homeAddress : '',
+                duration_minutes: durationMinutes
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                createModal.hide();
+                document.getElementById('createAppointmentForm').reset();
+                document.getElementById('new_home_address_container').classList.add('d-none');
+                calendar.refetchEvents();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    // Guardar Edición de Cita (Incluyendo Domicilio y Duración manual para actualizar calendario)
+    document.getElementById('saveEditApptBtn').addEventListener('click', function() {
+        var apptId = document.getElementById('edit_appt_id').value;
+        var date = document.getElementById('edit_date').value;
+        var time = document.getElementById('edit_time').value;
+        var reason = document.getElementById('edit_reason').value;
+        var status = document.getElementById('edit_status').value;
+
+        var isHomeVisit = document.getElementById('edit_is_home_visit').checked;
+        var homeAddress = document.getElementById('edit_home_address').value;
+        var durationMinutes = document.getElementById('edit_duration_minutes').value;
+
+        if (isHomeVisit && !homeAddress.trim()) {
+            alert("La dirección del domicilio es requerida.");
+            return;
+        }
+
+        fetch('/api/appointments/' + apptId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                date: date,
+                time: time,
+                reason: reason,
+                status: status,
+                is_home_visit: isHomeVisit,
+                home_address: isHomeVisit ? homeAddress : '',
+                duration_minutes: durationMinutes
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                detailModal.hide();
+                calendar.refetchEvents();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+
+    // Eliminar Cita
+    document.getElementById('deleteApptBtn').addEventListener('click', function() {
+        if (confirm('¿Estás seguro de que deseas eliminar esta cita de forma permanente?')) {
+            var apptId = document.getElementById('edit_appt_id').value;
+
+            fetch('/api/appointments/' + apptId, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    detailModal.hide();
+                    calendar.refetchEvents();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -44,6 +44,11 @@ class Appointment(db.Model):
     reason = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), default='pending', nullable=False) # 'pending', 'approved', 'rejected'
 
+    # NUEVOS CAMPOS: Visitas a domicilio y Duración
+    is_home_visit = db.Column(db.Boolean, default=False, nullable=False)
+    home_address = db.Column(db.String(255), nullable=True)
+    duration_minutes = db.Column(db.Integer, default=30, nullable=False) # Definido por el podólogo para bloquear horas en su calendario
+
     # Relación uno-a-uno o uno-a-muchos con ClinicalRecord
     clinical_records = db.relationship('ClinicalRecord', backref='appointment', lazy=True, cascade="all, delete-orphan")
 

@@ -52,7 +52,7 @@
                         </div>
                     {% endif %}
 
-                    <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="fa-regular fa-clock text-primary me-2"></i>Fecha, Hora y Motivo</h5>
+                    <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="fa-regular fa-clock text-primary me-2"></i>Fecha, Hora y Modalidad</h5>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -84,6 +84,19 @@
                         </div>
                     </div>
 
+                    <!-- NUEVA OPCION: CITA A DOMICILIO PARA EL PACIENTE -->
+                    <div class="p-3 bg-light rounded-3 mb-4 border">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="is_home_visit" name="is_home_visit">
+                            <label class="form-check-label fw-bold text-dark" for="is_home_visit">🏠 Solicitar atención a domicilio</label>
+                        </div>
+                        <div class="d-none mt-2" id="home_address_container">
+                            <label for="home_address" class="form-label fw-semibold text-secondary">Dirección Completa de tu Hogar</label>
+                            <input type="text" class="form-control bg-white" id="home_address" name="home_address" placeholder="Ej. Calle Mayor 12, Piso 2A, Madrid">
+                            <div class="form-text text-muted small">El podólogo se desplazará a esta ubicación el día de la cita.</div>
+                        </div>
+                    </div>
+
                     <div class="mb-4">
                         <label for="reason" class="form-label fw-semibold text-secondary">Motivo de la Cita / Comentarios</label>
                         <textarea class="form-control" id="reason" name="reason" rows="3" placeholder="Describe brevemente tus síntomas o molestias (Ej. Dolor en talón, callosidades, corte de uñas, uña encarnada...)" required></textarea>
@@ -108,6 +121,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // Establecer la fecha mínima como el día de hoy
     var today = new Date().toISOString().split('T')[0];
     document.getElementById('date').setAttribute('min', today);
+
+    // Lógica interactiva para mostrar la dirección en reservas
+    var isHomeCheck = document.getElementById('is_home_visit');
+    var addressContainer = document.getElementById('home_address_container');
+    var addressInput = document.getElementById('home_address');
+
+    isHomeCheck.addEventListener('change', function() {
+        if (isHomeCheck.checked) {
+            addressContainer.classList.remove('d-none');
+            addressInput.required = true;
+            addressInput.focus();
+        } else {
+            addressContainer.classList.add('d-none');
+            addressInput.required = false;
+        }
+    });
 });
 </script>
 {% endblock %}

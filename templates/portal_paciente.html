@@ -32,7 +32,18 @@
                                             <i class="fa-regular fa-clock me-1 text-primary"></i>
                                             {{ appt.date.strftime('%d/%m/%Y') }} a las {{ appt.time.strftime('%H:%M') }}
                                         </h6>
-                                        <p class="text-muted small mb-0"><strong>Motivo:</strong> {{ appt.reason }}</p>
+                                        <p class="text-muted small mb-1"><strong>Motivo:</strong> {{ appt.reason }}</p>
+
+                                        <!-- NUEVA INFORMACION DE MODALIDAD DOMICILIO / CONSULTORIO -->
+                                        <p class="mb-0 small text-secondary">
+                                            <strong>Modalidad:</strong>
+                                            {% if appt.is_home_visit %}
+                                                <span class="badge bg-info-subtle text-info border border-info-subtle"><i class="fa-solid fa-house-chimney me-1"></i> A domicilio</span>
+                                                <span class="d-block mt-1 text-dark"><i class="fa-solid fa-location-dot text-danger me-1"></i> {{ appt.home_address }}</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle"><i class="fa-solid fa-stethoscope me-1"></i> En consultorio</span>
+                                            {% endif %}
+                                        </p>
                                     </div>
                                     <div>
                                         {% if appt.status == 'approved' %}

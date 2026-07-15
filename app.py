@@ -186,14 +186,18 @@ def api_appointments():
         for appt in appointments:
             # Combinamos la fecha y la hora para formar ISO strings
             start_dt = datetime.combine(appt.date, appt.time).isoformat()
-            # Asumimos que cada cita dura 30 minutos por defecto para FullCalendar
-            end_time = datetime.combine(appt.date, appt.time)
-            # sumamos 30 minutos de forma simple para la visualización del calendario
-            from datetime import timedelta
-            end_dt = (end_time + timedelta(minutes=30)).isoformat()
 
-            # El título del evento será el nombre del paciente y el motivo
+            # Usamos la duración configurada manualmente para bloquear las horas exactas en el calendario
+            end_time = datetime.combine(appt.date, appt.time)
+            from datetime import timedelta
+            duration = appt.duration_minutes if appt.duration_minutes else 30
+            end_dt = (end_time + timedelta(minutes=duration)).isoformat()
+
+            # El título del evento será el nombre del paciente y el motivo (e indicar si es domicilio)
             patient_name = appt.patient.full_name if appt.patient else "Paciente Desconocido"
+            title = f"{patient_name} - {appt.reason}"
+            if appt.is_home_visit:
+                title = f"🏠 [DOMICILIO] {title}"
 
             # Definir color según el estado
             color = '#ffc107' # amarillo para pendiente
@@ -204,7 +208,7 @@ def api_appointments():
 
             events.append({
                 'id': appt.id,
-                'title': f"{patient_name} - {appt.reason}",
+                'title': title,
                 'start': start_dt,
                 'end': end_dt,
                 'backgroundColor': color,
@@ -217,7 +221,10 @@ def api_appointments():
                     'status': appt.status,
                     'time': appt.time.strftime('%H:%M'),
                     'date': appt.date.strftime('%Y-%m-%d'),
-                    'custom_price': appt.patient.custom_price if appt.patient else 0.0
+                    'custom_price': appt.patient.custom_price if appt.patient else 0.0,
+                    'is_home_visit': appt.is_home_visit,
+                    'home_address': appt.home_address if appt.home_address else '',
+                    'duration_minutes': duration
                 }
             })
         return jsonify(events)
@@ -230,6 +237,15 @@ def api_appointments():
         time_str = data.get('time')
         reason = data.get('reason')
         status = data.get('status', 'approved') # Por defecto aprobado si lo agenda el podólogo manualmente
+
+        # Nuevos campos de Domicilio y Duración
+        is_home_visit = bool(data.get('is_home_visit', False))
+        home_address = data.get('home_address', '')
+
+        try:
+            duration_minutes = int(data.get('duration_minutes', 30))
+        except (ValueError, TypeError):
+            duration_minutes = 30
 
         if not patient_id or not date_str or not time_str or not reason:
             return jsonify({'success': False, 'message': 'Faltan campos obligatorios.'}), 400
@@ -246,7 +262,10 @@ def api_appointments():
             date=appt_date,
             time=appt_time,
             reason=reason,
-            status=status
+            status=status,
+            is_home_visit=is_home_visit,
+            home_address=home_address if is_home_visit else '',
+            duration_minutes=duration_minutes
         )
         db.session.add(new_appt)
         db.session.commit()
@@ -287,6 +306,18 @@ def api_modify_appointment(appt_id):
 
         if 'reason' in data:
             appt.reason = data['reason']
+
+        if 'is_home_visit' in data:
+            appt.is_home_visit = bool(data['is_home_visit'])
+
+        if 'home_address' in data:
+            appt.home_address = data['home_address'] if appt.is_home_visit else ''
+
+        if 'duration_minutes' in data:
+            try:
+                appt.duration_minutes = int(data['duration_minutes'])
+            except (ValueError, TypeError):
+                pass
 
         db.session.commit()
         return jsonify({'success': True, 'message': 'Cita modificada correctamente.'})
@@ -479,6 +510,10 @@ def reservar():
         time_str = request.form.get('time')
         reason = request.form.get('reason')
 
+        # Captura de Visita a Domicilio desde el Paciente
+        is_home_visit = request.form.get('is_home_visit') == 'on'
+        home_address = request.form.get('home_address', '')
+
         if not date_str or not time_str or not reason:
             flash("Todos los campos son obligatorios.", "danger")
             return redirect(url_for('reservar'))
@@ -528,7 +563,10 @@ def reservar():
             date=appt_date,
             time=appt_time,
             reason=reason,
-            status='pending'
+            status='pending',
+            is_home_visit=is_home_visit,
+            home_address=home_address if is_home_visit else '',
+            duration_minutes=45 # Duración por defecto más amplia para traslados a domicilio si lo agenda el paciente, o 30
         )
         db.session.add(new_appt)
         db.session.commit()

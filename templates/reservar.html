@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Solicitar Cita - Podología Web{% endblock %}
+{% block title %}Solicitar Cita - Podología Clínica Integral Sol{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
@@ -8,10 +8,10 @@
         <div class="card shadow-lg border-0 rounded-4 my-4 overflow-hidden">
             <div class="bg-primary text-white p-4 p-md-5 text-center position-relative">
                 <div class="bg-white text-primary d-inline-flex p-3 rounded-circle shadow mb-3">
-                    <i class="fa-regular fa-calendar-plus fs-1"></i>
+                    <i class="fa-regular fa-calendar-plus fs-1 text-primary"></i>
                 </div>
                 <h1 class="fw-bold mb-1">Solicitud de Cita Médica</h1>
-                <p class="mb-0 opacity-80">Rellena el siguiente formulario para solicitar tu cita con el especialista en podología.</p>
+                <p class="mb-0 opacity-80">Rellena el siguiente formulario para solicitar tu cita en Podología Clínica Integral Sol con la Dra. Marcela González G.</p>
             </div>
 
             <div class="card-body p-4 p-md-5 bg-white">
@@ -19,8 +19,8 @@
 
                     {% if not current_user.is_authenticated %}
                         <div class="alert alert-info py-3 px-4 rounded-3 border-0 mb-4 shadow-sm">
-                            <h5 class="alert-heading fw-bold mb-1"><i class="fa-solid fa-circle-info me-2"></i>¿Primera vez que nos visitas?</h5>
-                            <p class="mb-0 small">Al solicitar tu cita crearemos automáticamente una cuenta con tu correo electrónico. Podrás usar tu número de teléfono para iniciar sesión posteriormente en el portal de pacientes.</p>
+                            <h5 class="alert-heading fw-bold mb-1"><i class="fa-solid fa-circle-info me-2 text-info"></i>¿Primera vez que nos visitas o no tienes cuenta?</h5>
+                            <p class="mb-0 small text-dark">Al solicitar tu cita crearemos automáticamente una cuenta con tu correo electrónico. Podrás usar tu número de teléfono para iniciar sesión posteriormente en el portal de pacientes.</p>
                         </div>
 
                         <h5 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="fa-solid fa-address-card text-primary me-2"></i>Tus Datos Personales</h5>
@@ -43,7 +43,7 @@
                     {% else %}
                         <div class="p-3 bg-light rounded-3 mb-4 border d-flex align-items-center">
                             <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 45px; height: 45px;">
-                                <span class="fw-bold">{{ current_user.full_name[:1].upper() }}</span>
+                                <span class="fw-bold text-white">{{ current_user.full_name[:1].upper() }}</span>
                             </div>
                             <div>
                                 <h6 class="fw-bold mb-0 text-dark">Solicitando cita como: {{ current_user.full_name }}</h6>
@@ -84,13 +84,29 @@
                         </div>
                     </div>
 
-                    <!-- NUEVA OPCION: CITA A DOMICILIO PARA EL PACIENTE -->
+                    <!-- SELECCIÓN DE MODALIDAD -->
                     <div class="p-3 bg-light rounded-3 mb-4 border">
-                        <div class="form-check form-switch mb-2">
-                            <input class="form-check-input" type="checkbox" id="is_home_visit" name="is_home_visit">
-                            <label class="form-check-label fw-bold text-dark" for="is_home_visit">🏠 Solicitar atención a domicilio</label>
+                        <label class="form-label fw-bold text-dark d-block mb-3">📍 Modalidad de Atención</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="modality" id="modality_consulta" value="consulta" checked autocomplete="off">
+                                <label class="btn btn-outline-primary w-100 py-3 px-2 d-flex flex-column align-items-center justify-content-center" for="modality_consulta">
+                                    <i class="fa-solid fa-hospital fs-4 mb-2 text-primary"></i>
+                                    <span class="fw-bold d-block small">En Consulta</span>
+                                    <small class="text-muted d-block" style="font-size: 0.65rem;">Anibal Pinto 960 A</small>
+                                </label>
+                            </div>
+                            <div class="col-6">
+                                <input type="radio" class="btn-check" name="modality" id="modality_domicilio" value="domicilio" autocomplete="off">
+                                <label class="btn btn-outline-primary w-100 py-3 px-2 d-flex flex-column align-items-center justify-content-center" for="modality_domicilio">
+                                    <i class="fa-solid fa-house-medical fs-4 mb-2 text-primary"></i>
+                                    <span class="fw-bold d-block small">A Domicilio</span>
+                                    <small class="text-muted d-block" style="font-size: 0.65rem;">Visita en tu hogar</small>
+                                </label>
+                            </div>
                         </div>
-                        <div class="d-none mt-2" id="home_address_container">
+
+                        <div class="d-none mt-3" id="home_address_container">
                             <label for="home_address" class="form-label fw-semibold text-secondary">Dirección Completa de tu Hogar</label>
                             <input type="text" class="form-control bg-white" id="home_address" name="home_address" placeholder="Ej. Calle Mayor 12, Piso 2A, Madrid">
                             <div class="form-text text-muted small">El podólogo se desplazará a esta ubicación el día de la cita.</div>
@@ -104,7 +120,7 @@
 
                     <div class="d-grid pt-3">
                         <button type="submit" class="btn btn-primary btn-lg fw-bold shadow">
-                            <i class="fa-regular fa-paper-plane me-1"></i> Enviar Solicitud de Cita
+                            <i class="fa-regular fa-paper-plane me-1 text-white"></i> Enviar Solicitud de Cita
                         </button>
                     </div>
 
@@ -118,17 +134,16 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Establecer la fecha mínima como el día de hoy
     var today = new Date().toISOString().split('T')[0];
     document.getElementById('date').setAttribute('min', today);
 
-    // Lógica interactiva para mostrar la dirección en reservas
-    var isHomeCheck = document.getElementById('is_home_visit');
+    var radioConsulta = document.getElementById('modality_consulta');
+    var radioDomicilio = document.getElementById('modality_domicilio');
     var addressContainer = document.getElementById('home_address_container');
     var addressInput = document.getElementById('home_address');
 
-    isHomeCheck.addEventListener('change', function() {
-        if (isHomeCheck.checked) {
+    function toggleAddress() {
+        if (radioDomicilio.checked) {
             addressContainer.classList.remove('d-none');
             addressInput.required = true;
             addressInput.focus();
@@ -136,7 +151,10 @@ document.addEventListener('DOMContentLoaded', function() {
             addressContainer.classList.add('d-none');
             addressInput.required = false;
         }
-    });
+    }
+
+    radioConsulta.addEventListener('change', toggleAddress);
+    radioDomicilio.addEventListener('change', toggleAddress);
 });
 </script>
 {% endblock %}

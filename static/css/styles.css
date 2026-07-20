@@ -1,104 +1,264 @@
-/* Estilos generales modernos para Podología Web */
+/* ==========================================================================
+   PODOLOGÍA CLÍNICA INTEGRAL SOL - ESTILOS CORPORATIVOS
+   Colores: Morado (#5C2D91), Turquesa (#00A8B5), Verde Agua (#EBF9F8), Charcoal (#2D2D2D)
+   ========================================================================== */
 
 :root {
-    --primary-color: #0d6efd;
-    --primary-hover: #0b5ed7;
-    --success-color: #198754;
+    --primary-color: #5C2D91;     /* Morado Corporativo */
+    --primary-hover: #4a2176;
+    --accent-color: #00A8B5;      /* Turquesa de Acción */
+    --accent-hover: #008f9b;
+    --bg-clinical-light: #EBF9F8; /* Verde Agua Claro Clínico */
+    --text-charcoal: #2D2D2D;     /* Charcoal Oscuro */
+
+    --success-color: #00A8B5;     /* Usamos turquesa también para éxito */
     --warning-color: #ffc107;
     --danger-color: #dc3545;
-    --dark-color: #212529;
-    --light-color: #f8f9fa;
-    --border-radius-custom: 12px;
+    --border-radius-custom: 16px;
+    --card-shadow: 0 10px 30px rgba(92, 45, 145, 0.05);
 }
 
+/* Fondo General y Estructura */
 body {
+    background-color: var(--bg-clinical-light) !important;
+    color: var(--text-charcoal) !important;
     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-    color: var(--dark-color);
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Tipografía y Espaciado */
-.tracking-tight {
-    letter-spacing: -0.025em;
+/* Encabezados y Tipografía */
+h1, h2, h3, h4, h5, h6, .navbar-brand {
+    color: var(--primary-color);
+    font-weight: 700;
 }
 
-/* Efectos en tarjetas */
-.card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+p, label, th, td, span, input, select, textarea {
+    color: var(--text-charcoal);
 }
 
-@media (min-width: 768px) {
-    .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08) !important;
-    }
+/* Sobreescribir clases utilitarias de Bootstrap */
+.bg-primary {
+    background-color: var(--primary-color) !important;
 }
 
-/* Estilos de elementos interactivos de la Navbar */
-.navbar-brand {
-    font-size: 1.35rem;
+.text-primary {
+    color: var(--primary-color) !important;
 }
 
-.dropdown-menu-item {
-    transition: background-color 0.2s;
+.text-success {
+    color: var(--accent-color) !important;
 }
 
-.dropdown-menu-item:hover {
-    background-color: var(--light-color);
+.bg-success {
+    background-color: var(--accent-color) !important;
 }
 
-/* Ajustes Responsivos para Formularios y Botones en Móviles */
-@media (max-width: 576px) {
-    .btn {
-        padding: 0.6rem 1rem;
-        font-size: 0.95rem;
-    }
-
-    .form-control, .form-select {
-        padding: 0.6rem 0.85rem;
-        font-size: 0.95rem;
-    }
+.bg-success-subtle {
+    background-color: #e0f6f7 !important;
+    color: #007a83 !important;
 }
 
-/* Clases útiles para timeline en historial clínico */
-.timeline {
-    position: relative;
-    padding-left: 10px;
+.border-success-subtle {
+    border-color: #b2ebed !important;
 }
 
-/* Clases de utilidad específicas para imágenes clínicas */
-.clinical-thumb-img {
-    transition: transform 0.2s;
+.text-success-emphasis {
+    color: #006067 !important;
 }
 
-.clinical-thumb-img:hover {
-    transform: scale(1.03);
+/* Botones de Acción Morados */
+.btn-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.25s ease;
 }
 
-/* Estilo para los botones de las plantillas rápidas de atención */
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+    transform: translateY(-1px);
+}
+
+/* Botones de Acción Turquesas */
+.btn-outline-primary {
+    color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:active {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    color: #ffffff !important;
+}
+
+.btn-success, .btn-outline-success {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    color: #ffffff !important;
+    border-radius: 10px;
+}
+
+.btn-success:hover {
+    background-color: var(--accent-hover) !important;
+    border-color: var(--accent-hover) !important;
+}
+
+/* Micrófono y Dictado de Voz Turquesa */
+#dictadoVozBtn {
+    background-color: transparent !important;
+    border-color: var(--accent-color) !important;
+    color: var(--accent-color) !important;
+    font-weight: 600;
+}
+
+#dictadoVozBtn:hover, #dictadoVozBtn.btn-danger {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    color: #ffffff !important;
+}
+
+/* Botones de Plantilla Rápida */
 .quick-template {
     font-size: 0.8rem;
     border-radius: 20px;
-    padding: 0.25rem 0.75rem;
+    padding: 0.35rem 0.9rem;
+    background-color: #ffffff;
+    border: 1px solid var(--accent-color) !important;
+    color: var(--accent-color) !important;
+    font-weight: 500;
+    transition: all 0.2s;
 }
 
-/* Personalización sutil para FullCalendar en móvil */
+.quick-template:hover {
+    background-color: var(--accent-color) !important;
+    color: #ffffff !important;
+}
+
+/* Tarjetas y Bloques Blancos de UI */
+.card {
+    background: #ffffff;
+    border: 1px solid rgba(92, 45, 145, 0.08) !important;
+    border-radius: var(--border-radius-custom) !important;
+    box-shadow: var(--card-shadow) !important;
+    overflow: hidden;
+}
+
+/* Tablas Clínicas */
+.table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.table-primary {
+    --bs-table-bg: var(--primary-color) !important;
+    --bs-table-color: #ffffff !important;
+}
+
+.table-primary th {
+    color: #ffffff !important;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+/* Elementos del Navegador (Navbar) */
+.navbar {
+    border-bottom: 3px solid var(--accent-color);
+}
+
+.navbar-brand span {
+    letter-spacing: -0.01em;
+}
+
+/* Badge de Roles */
+.badge.bg-light.text-primary {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Estilos de Formulario */
+.form-control, .form-select {
+    border: 1.5px solid #dcdbdb;
+    border-radius: 10px;
+    padding: 0.65rem 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--accent-color) !important;
+    box-shadow: 0 0 0 0.25rem rgba(0, 168, 181, 0.15) !important;
+}
+
+/* Estilo personalizado de las Citas a Domicilio */
+.badge.bg-info-subtle {
+    background-color: rgba(0, 168, 181, 0.1) !important;
+    color: var(--accent-color) !important;
+    border: 1px solid rgba(0, 168, 181, 0.2) !important;
+}
+
+/* Personalización del Calendario (FullCalendar.js) */
 .fc-theme-standard td, .fc-theme-standard th {
-    border-color: #e9ecef !important;
+    border-color: rgba(92, 45, 145, 0.08) !important;
 }
 
 .fc-daygrid-event {
-    border-radius: 4px !important;
-    padding: 2px 4px !important;
+    border-radius: 6px !important;
+    padding: 4px 6px !important;
+    font-weight: 600 !important;
     font-size: 0.85rem !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 }
 
-.fc-toolbar-title {
-    font-size: 1.25rem !important;
-    font-weight: bold;
+.fc-col-header-cell {
+    background-color: var(--primary-color) !important;
 }
 
-@media (max-width: 768px) {
-    .fc-toolbar-title {
-        font-size: 1rem !important;
+.fc-col-header-cell a {
+    color: #ffffff !important;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    text-decoration: none !important;
+}
+
+.fc-day-today {
+    background-color: rgba(0, 168, 181, 0.05) !important;
+}
+
+/* Asegurar botones del calendario responsivos y limpios */
+.fc-button-primary {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+.fc-button-primary:hover {
+    background-color: var(--primary-hover) !important;
+    border-color: var(--primary-hover) !important;
+}
+
+.fc-button-active {
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+}
+
+/* Estilo para los Badges del detalle */
+#detailCustomPrice {
+    color: var(--accent-color) !important;
+}
+
+/* Footer corporativo */
+footer {
+    background-color: #1e1230 !important;
+}
+
+/* Ajustes de Touch para iPads y iPhones */
+@media (max-width: 991px) {
+    .btn, .form-control, .form-select {
+        min-height: 44px; /* Tamaño recomendado para pulsación táctil */
     }
 }
